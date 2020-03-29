@@ -1,4 +1,4 @@
-package com.vsb.kru13.osmzhttpserver;
+package com.bau0025.osmzhttpserver;
 
 public enum SocketServerType {
     MAIN, CAMERA

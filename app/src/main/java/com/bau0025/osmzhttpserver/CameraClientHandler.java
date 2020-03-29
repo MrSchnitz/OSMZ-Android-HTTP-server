@@ -1,4 +1,4 @@
-package com.vsb.kru13.osmzhttpserver;
+package com.bau0025.osmzhttpserver;
 
 import android.os.Bundle;
 import android.os.Environment;
