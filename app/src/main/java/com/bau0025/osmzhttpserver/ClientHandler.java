@@ -202,7 +202,6 @@ public class ClientHandler extends Thread {
                 } else {
                     out.write("Content-Type: text/html\n");
                     file = new File(sdPath + "/OSMZ/index.html");
-//                throw new FileNotFoundException();
                 }
 
                 out.write("Content-Length: " + String.valueOf(file.length()) + "\n");

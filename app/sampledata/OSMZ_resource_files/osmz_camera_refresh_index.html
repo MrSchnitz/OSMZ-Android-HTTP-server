@@ -5,13 +5,19 @@
 	<title>OSMZ Camera refresher</title>
 </head>
 <body>
-	<div style="width: 100vw; height: 100vh; display: flex; justify-content: center; align-items: center;">
+	<div style="width: 100vw; height: 100vh; display: flex; justify-content: center; flex-direction: column; align-items: center;">
+	<h1>OSMZ Camera refresher</h1>
+	<h2 id="headline" style="display: none;">from camera picture data stream</h2>
 	<img src="./IMG.jpg" alt="camera_img" />
 	</div>
 	<script type="text/javascript">
 		window.onload = () => playInterval();
 		playInterval = () => {
 			setInterval(() => location.reload(), 5000);
+			if(window.location.pathname.includes("snapshot")){
+				document.getElementById("headline").style.display = "block";
+			}
+			;
 		};
 	</script>
 </body>

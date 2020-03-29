@@ -5,16 +5,19 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
 import android.text.method.ScrollingMovementMethod;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.TextView;
 
 import java.util.ArrayList;
@@ -33,6 +36,16 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     TextView messageTextView;
 
     private static final int READ_EXTERNAL_STORAGE = 1;
+
+
+    /**
+     * HTTP Server service
+     */
+    private HttpServerService httpServerService = null;
+    private Intent httpServerServiceIntent = null;
+    private boolean isServiceBound;
+
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,32 +80,43 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 ActivityCompat.requestPermissions(
                         this, new String[]{Manifest.permission.READ_EXTERNAL_STORAGE}, READ_EXTERNAL_STORAGE);
             } else {
-                s = new SocketServer(this.messagehandler);
-                s.start();
+
+                // WITH SERVICE
+                this.httpServerServiceIntent = new Intent(this.getBaseContext(), HttpServerService.class);
+                startService(httpServerServiceIntent);
+                doBindService();
+
+                // WITHOUT SERVICE
+//                s = new SocketServer(this.messagehandler);
+//                s.start();
             }
         }
         if (v.getId() == R.id.button2) {
-            s.close();
-            try {
-                s.join();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+
+            // WITH SERVICE
+            if(this.httpServerServiceIntent != null) {
+                this.httpServerService.stopService();
             }
+
+            // WITHOUT SERVICE
+//            s.close();
+//            try {
+//                s.join();
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
         if(v.getId() == R.id.camera_switch_button) {
-//            if(s.bRunning) {
-//                s.close();
-//                try {
-//                    s.join();
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
+            if(s != null && s.bRunning) {
+                s.close();
+                try {
+                    s.join();
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
 
             Intent intent = new Intent(this, CameraActivity.class);
-//            EditText editText = (EditText) findViewById(R.id.editText);
-//            String message = editText.getText().toString();
-//            intent.putExtra(EXTRA_MESSAGE, message);
             startActivity(intent);
         }
     }
@@ -144,4 +168,46 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         }
     };
+
+
+
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            httpServerService = ((HttpServerService.LocalBinder)iBinder).getInstance();
+            httpServerService.setHandler(messagehandler);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+            httpServerService = null;
+        }
+    };
+
+
+    private void doBindService()
+    {
+        bindService(new Intent(this,
+                HttpServerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+        isServiceBound = true;
+    }
+
+    private void doUnbindService()
+    {
+        if (isServiceBound)
+        {
+            unbindService(serviceConnection);
+            isServiceBound = false;
+        }
+    }
+
+    @Override
+    protected void onDestroy()
+    {
+        super.onDestroy();
+        doUnbindService();
+    }
 }

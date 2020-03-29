@@ -5,12 +5,17 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 
 import android.Manifest;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.hardware.Camera;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -32,6 +37,8 @@ public class CameraActivity extends AppCompatActivity {
 
     private SocketServer socketServer;
 
+    private CountDownTimer counter;
+
     Button captureButton;
 
     public static byte[] pictureData = null;
@@ -40,6 +47,14 @@ public class CameraActivity extends AppCompatActivity {
 
     private static String CAMERA_TAG = "CAMERA";
     private static String CAMERA_ERROR_TAG = "CAMERA_ERROR";
+
+
+    /**
+     * HTTP Server service
+     */
+    private HttpServerService httpServerService = null;
+    private Intent httpServerServiceIntent = null;
+    private boolean isServiceBound;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -81,15 +96,20 @@ public class CameraActivity extends AppCompatActivity {
                 }
         );
 
+        // WITH SERVICE
+        this.httpServerServiceIntent = new Intent(this.getBaseContext(), HttpServerService.class);
+        startService(httpServerServiceIntent);
+        doBindService();
 
-        socketServer = new SocketServer(SocketServerType.CAMERA);
-        socketServer.start();
+        // WITHOUT SERVICE
+//        socketServer = new SocketServer(SocketServerType.CAMERA);
+//        socketServer.start();
 
         startTimer(4500);
     }
 
     private void startTimer(long time){
-        CountDownTimer counter = new CountDownTimer(3600000, time){
+        counter = new CountDownTimer(3600000, time){
             public void onTick(long millisUntilDone){
 
 //                Log.d("counter_label", "Counter text should be changed");
@@ -149,21 +169,12 @@ public class CameraActivity extends AppCompatActivity {
     public static final int MEDIA_TYPE_IMAGE = 1;
     public static final int MEDIA_TYPE_VIDEO = 2;
 
-    /** Create a file Uri for saving an image or video */
-    private static Uri getOutputMediaFileUri(int type){
-        return Uri.fromFile(getOutputMediaFile(type));
-    }
 
-    /** Create a File for saving an image or video */
     private static File getOutputMediaFile(int type){
 
         String socketCameraPath = Environment.getExternalStorageDirectory().getAbsolutePath()+"/OSMZ/SocketCamera";
 
-//        File mediaStorageDir = new File(Environment.getExternalStoragePublicDirectory(
-//                Environment.DIRECTORY_PICTURES), "MyCameraApp");
         File mediaStorageDir = new File(socketCameraPath);
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
 
         // Create the storage directory if it does not exist
         if (! mediaStorageDir.exists()){
@@ -189,5 +200,55 @@ public class CameraActivity extends AppCompatActivity {
         }
 
         return mediaFile;
+    }
+
+
+    private ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName componentName, IBinder iBinder)
+        {
+            httpServerService = ((HttpServerService.LocalBinder)iBinder).getInstance();
+            httpServerService.setHandler(null);
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName componentName)
+        {
+            httpServerService = null;
+        }
+    };
+
+    private void doBindService()
+    {
+        bindService(new Intent(this,
+                HttpServerService.class), serviceConnection, Context.BIND_AUTO_CREATE);
+        isServiceBound = true;
+    }
+
+    private void doUnbindService()
+    {
+        if (isServiceBound)
+        {
+            unbindService(serviceConnection);
+            isServiceBound = false;
+        }
+    }
+
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        this.counter.cancel();
+        doUnbindService();
+
+        // WITH SERVICE
+        if(this.httpServerServiceIntent != null) {
+            this.httpServerService.stopService();
+        }
+
+        // WITHOUT SERVICE
+//        if(this.socketServer != null && this.socketServer.bRunning){
+//            this.socketServer.close();
+//        }
     }
 }

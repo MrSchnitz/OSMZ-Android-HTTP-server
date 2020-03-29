@@ -23,7 +23,6 @@ public class CameraClientHandler extends Thread {
 
     Socket s;
 
-
     public String SNAPSHOT_URL = "snapshot";
     public String STREAM_URL = "stream";
 

@@ -75,9 +75,6 @@ public class SocketServer extends Thread {
                     } else {
                         Log.d("ERROR", "Not available permits");
                     }
-
-//                    CGIClientHandler cgiClientHandler = new CGIClientHandler(s);
-//                    cgiClientHandler.start();
                 }
 
             }
