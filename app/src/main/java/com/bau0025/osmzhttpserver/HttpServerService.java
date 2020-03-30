@@ -82,7 +82,6 @@ public class HttpServerService extends Service {
         }
     }
 
-
     public void stopService() {
         if(mHandler != null)
         {

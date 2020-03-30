@@ -18,6 +18,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 
 public class SocketServer extends Thread {
@@ -30,8 +31,6 @@ public class SocketServer extends Thread {
     boolean bRunning;
 
     private int MAX_THREADS = 10;
-    private int SEMAPHORE_TIMEOUT = 2000;
-
 
     private Semaphore semaphore = new Semaphore(MAX_THREADS);
 
@@ -86,8 +85,7 @@ public class SocketServer extends Thread {
                 Log.d("SERVER", "Error");
                 e.printStackTrace();
             }
-        }
-        finally {
+        } finally {
             serverSocket = null;
             bRunning = false;
         }

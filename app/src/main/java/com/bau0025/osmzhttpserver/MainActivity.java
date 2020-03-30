@@ -142,24 +142,18 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         @Override
         public void handleMessage(Message inputMessage) {
-            // Gets the image task from the incoming Message object.
             super.handleMessage(inputMessage);
+
             if(inputMessage.what == 1 || inputMessage.what == -1 && threadCount > 0) {
-//                if(inputMessage.what == -1){
-//                    messageMap.remove(threadCount);
-//                }
                 threadCount += inputMessage.what;
                 threadTextView.setText("Active Threads: " + threadCount);
             }
-
 
             if(inputMessage.getData().get(ClientHandler.DATA) != null){
                 messageMap.put(threadCount, String.valueOf(inputMessage.getData().get(ClientHandler.DATA)));
                 messageList.add(String.valueOf(inputMessage.getData().get(ClientHandler.DATA)));
                 StringBuilder stringBuilder = new StringBuilder();
-//                for(String data : messageMap.values()){
-//                    stringBuilder.append(data);
-//                }
+
                 for(String data : messageList){
                     stringBuilder.append(data);
                 }

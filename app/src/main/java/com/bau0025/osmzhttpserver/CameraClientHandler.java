@@ -49,7 +49,6 @@ public class CameraClientHandler extends Thread {
 
             while (tmp != null && !tmp.isEmpty()){
                 String req[] = tmp.split(" ");
-//                Log.d("SERVER", "HTTP REQ : " + req[0]);
                 if(req[1].contains(".jpg")){
                     Log.d("IMAGE REQUEST", req[1]);
                     filename = "IMG.jpg";
@@ -76,17 +75,14 @@ public class CameraClientHandler extends Thread {
                 tmp = in.readLine();
             }
 
-            out.write("HTTP/1.0 200 OK\n");
 
+            out.write("HTTP/1.0 200 OK\n");
 
 
             if (fromByteStreamImage){
                 byte[] fileBytes = CameraActivity.pictureData;
                 if(fileBytes != null) {
                     if(multipart){
-//                        out.write("Content-Type: multipart/x-mixed-replace; boundary=\"OSMZ_boundary\"");
-//                        out.write("--OSMZ_boundary");
-//                        out.write("Content-Type: image/jpeg\n");
                         o.write(fileBytes);
                         out.write("--OSMZ_boundary\n");
                         out.write("Content-Type: image/jpeg\n");
@@ -114,7 +110,7 @@ public class CameraClientHandler extends Thread {
                         out.write("Content-Type: text/html\n");
                     }
                     if (filename.endsWith(".jpg")) {
-                            out.write("Content-Type: image/jpeg\n");
+                        out.write("Content-Type: image/jpeg\n");
                     }
 
 

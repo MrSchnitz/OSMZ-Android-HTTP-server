@@ -188,8 +188,6 @@ public class CameraActivity extends AppCompatActivity {
         String timeStamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
         File mediaFile;
         if (type == MEDIA_TYPE_IMAGE){
-//            mediaFile = new File(mediaStorageDir.getPath() + File.separator +
-//                    "IMG_"+ timeStamp + ".jpg");
             mediaFile = new File(mediaStorageDir.getPath() + File.separator +
                     "IMG.jpg");
         } else if(type == MEDIA_TYPE_VIDEO) {
